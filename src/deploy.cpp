@@ -176,7 +176,7 @@ void setup()
 
 void displaySensorIDBottom()
 {
-  u8g2.setCursor(50, 60);
+  u8g2.setCursor(30, 60);
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.print("Sensor ID: ");
   u8g2.print(sensorID.c_str());

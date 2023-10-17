@@ -21,7 +21,10 @@ def on_message(client, userdata, msg):
     sensor = msg.topic[msg.topic.rfind('/')+1:]
     weight = struct.unpack('<i', msg.payload)
     print(f"Received payload weight: {weight[0]}")
-    sensorData[sensor] = Weight_DTO(sensor, weight[0])
+    if(sensor in sensorData.keys()):
+        sensorData[sensor].weight = weight[0]
+    else:
+        sensorData[sensor] = Weight_DTO(sensor, weight[0])
 
 # This code has to be put here to make it run with the flask run command
 client = mqtt.Client()
@@ -82,7 +85,7 @@ def getWeightData(sensor):
     if sensor not in sensorData.keys():
         response = make_response('The requested sensor is not registered.', 404)
         return response
-    return sensorData.get(sensor).weight
+    return str(sensorData.get(sensor).weight)
 
 @app.route("/weights/<string:sensor>/full", methods=['GET'])
 def getFullData(sensor):
@@ -90,8 +93,8 @@ def getFullData(sensor):
     if sensor not in sensorData.keys():
         response = make_response('The requested sensor is not registered.', 404)
         return response
-    fullData = sensorData.get(sensor).full
-    return fullData if fullData is not None else 'null' 
+    fullWeight = sensorData.get(sensor).full
+    return str(fullWeight) if fullWeight is not None else 'null' 
 
 @app.route("/weights/<string:sensor>/empty", methods=['GET'])
 def getEmptyData(sensor):
@@ -99,8 +102,8 @@ def getEmptyData(sensor):
     if sensor not in sensorData.keys():
         response = make_response('The requested sensor is not registered.', 404)
         return response
-    emptyData = sensorData.get(sensor).empty
-    return emptyData if emptyData is not None else 'null'
+    emptyWeight = sensorData.get(sensor).empty
+    return str(emptyWeight) if emptyWeight is not None else 'null'
     
 @app.route("/weights/<string:sensor>/level", methods=['GET'])
 def getContainerFillLevel(sensor):
@@ -115,7 +118,7 @@ def getContainerFillLevel(sensor):
     if data.full == None: 
         response = make_response('The full container has to be weight first using the full endpoint.', 424)
         return response
-    return (data.weight - data.empty) / (data.full - data.empty)
+    return str((data.weight - data.empty) / (data.full - data.empty))
     
 
 # Add calibrate between full/empty or not?
@@ -126,7 +129,7 @@ def setFullContainerWeight(sensor):
     if sensor not in sensorData.keys():
         raise KeyError("The requested sensor is not registered.")
     sensorData[sensor].full = sensorData[sensor].weight
-    return sensorData[sensor].full
+    return str(sensorData[sensor].full)
 
 @app.route("/weights/<string:sensor>/empty", methods=['POST'])
 def setEmptyContainerWeight(sensor):
@@ -134,4 +137,4 @@ def setEmptyContainerWeight(sensor):
     if sensor not in sensorData.keys():
         raise KeyError("The requested sensor is not registered.")
     sensorData[sensor].empty = sensorData[sensor].weight
-    return sensorData[sensor].empty
+    return str(sensorData[sensor].empty)
