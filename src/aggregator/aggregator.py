@@ -6,7 +6,7 @@ from markupsafe import escape
 import struct
 
 app = Flask(__name__)
-ipAddressMQTT = "192.168.178.24"
+ipAddressMQTT = "192.168.0.118"
 portMQTT = 1900
 
 sensorData = {}
@@ -35,19 +35,20 @@ client.loop_start()
 def home():
     endpoints = {
         "GET" : {
-        "weights": "Data of all sensors that data was aggregated on",
-        "weights/<sensor-id>": "Data of a particular sensor specified by the <sensor-id> can be seen under the name property of the weight endpoint",
-        "weights/<sensor-id>/name": "Name of the sensor, corresponds with <sensor-id>",
-        "weights/<sensor-id>/weight": "Latest published weight of the sensor",
-        "weights/<sensor-id>/full": "Weight of the completely filled container on the scale. Null if weight not set previously via a POST to this endpoint",
-        "weights/<sensor-id>/empty": "Weight of the completely empty container on the scale. Null if weight not set previously via a POST to this endpoint",
-        "weights/<sensor-id>/level": "Current fill level based on weight of the container on the scale, requires full and empty to be set!",
+            "weights": "Data of all sensors that data was aggregated on",
+            "weights/<sensor-id>": "Data of a particular sensor specified by the <sensor-id> can be seen under the name property of the weight endpoint",
+            "weights/<sensor-id>/name": "Name of the sensor, corresponds with <sensor-id>",
+            "weights/<sensor-id>/weight": "Latest published weight of the sensor",
+            "weights/<sensor-id>/full": "Weight of the completely filled container on the scale. Null if weight not set previously via a POST to this endpoint",
+            "weights/<sensor-id>/empty": "Weight of the completely empty container on the scale. Null if weight not set previously via a POST to this endpoint",
+            "weights/<sensor-id>/level": "Current fill level based on weight of the container on the scale, requires full and empty to be set!",
         },
         "POST" : {
             "weights/<sensor-id>/full": "Sets the full value to the currently published weight. Used to calibrate the weight of a completely filled container on the scale.",
             "weights/<sensor-id>/empty": "Sets the empty value to the currently published weight. Used to calibrate the weight of a completely empty container on the scale.",
         }
         }
+    return endpoints
 
 @app.route("/weights", methods=['GET'])
 def getAllWeightData():

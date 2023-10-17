@@ -31,10 +31,10 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 bool enableBootDisplay = false;
 
 // Replace the next variables with your SSID/Password combination
-// const char *ssid = "Cocktail_Mixer";
-// const char *password = "process_hubby";
-const char *ssid = "FRITZ!Box 7530 BS";
-const char *password = "09324416513504437202";
+const char *ssid = "Cocktail_Mixer";
+const char *password = "process_hubby";
+//const char *ssid = "FRITZ!Box 7530 BS";
+//const char *password = "09324416513504437202";
 
 IPAddress server(192, 168, 178, 27);
 const int port = 1900;
