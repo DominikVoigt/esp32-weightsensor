@@ -36,7 +36,7 @@ const char *password = "process_hubby";
 //const char *ssid = "FRITZ!Box 7530 BS";
 //const char *password = "09324416513504437202";
 
-IPAddress server(192, 168, 178, 27);
+IPAddress server(192, 168, 0, 118);
 const int port = 1900;
 const std::string sensorID = "1111";
 
@@ -253,6 +253,7 @@ void handleNewWeightData()
   else
   {
     firstMeasurement = false;
+    lastWeight = newWeight;
   }
   if (newWeight <= 2)
   {
@@ -263,6 +264,8 @@ void handleNewWeightData()
   publishWeightToMQTT();
   displayWeight();
   Serial.print("Load_cell output val: ");
+  Serial.print("New weight:");
+  Serial.println(newWeight);
   Serial.println(displayedWeight);
 }
 
