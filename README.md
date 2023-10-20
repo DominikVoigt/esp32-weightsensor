@@ -1,5 +1,9 @@
 # Esp32-Weightsensor
 
+## Demo
+
+![Demo GIF of measurement](docs/images/demo.gif)
+
 ## Description
 
 Load cells can provide very reliable weight-sensing data for a wide variety of industrial applications.
