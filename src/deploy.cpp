@@ -21,7 +21,7 @@ const int HX711_sck = 16; // mcu > HX711 sck pin
 HX711_ADC LoadCell(HX711_dout, HX711_sck);
 float calibrationValue = 743.72;
 const int calVal_eepromAdress = 0;
-bool useEEPROM = false;
+bool useEEPROM = true;
 
 unsigned long t = 0;
 const int serialPrintInterval = 100;
@@ -49,28 +49,23 @@ bool firstMeasurement = true;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-void reconnect()
+void displaySensorIDBottom()
 {
-  // Loop until we're reconnected
-  while (!client.connected())
-  {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect("ESP32Client"))
-    {
-      Serial.println("connected");
-      // Subscribe
-      client.subscribe("esp32/output");
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
+  u8g2.setCursor(30, 60);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.print("Sensor ID: ");
+  u8g2.print(sensorID.c_str());
+}
+
+void displayReconnectMessage() {
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(0, 15);
+  u8g2.print("Disconnected");
+  u8g2.setCursor(0, 40);
+  u8g2.print("Reconnecting...");
+  displaySensorIDBottom();
+  u8g2.sendBuffer();
 }
 
 // interrupt routine:
@@ -174,14 +169,6 @@ void setup()
   setupMQTT();
 }
 
-void displaySensorIDBottom()
-{
-  u8g2.setCursor(30, 60);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.print("Sensor ID: ");
-  u8g2.print(sensorID.c_str());
-}
-
 void displayWeight()
 {
   u8g2.clearBuffer();
@@ -244,9 +231,10 @@ void handleNewWeightData()
     {
       displayMeasuring();
     }
+    lastWeight = newWeight;
     if (smallDelta || largeDelta)
     {
-      lastWeight = newWeight;
+      // Do not update the screen
       return;
     }
   }
@@ -264,9 +252,34 @@ void handleNewWeightData()
   publishWeightToMQTT();
   displayWeight();
   Serial.print("Load_cell output val: ");
-  Serial.print("New weight:");
   Serial.println(newWeight);
-  Serial.println(displayedWeight);
+}
+
+void reconnect()
+{
+  displayReconnectMessage();
+  // Loop until we're reconnected
+  while (!client.connected())
+  {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("ESP32Client"))
+    {
+      Serial.println("connected");
+      // Subscribe
+      client.subscribe("esp32/output");
+      // display weight after reconnection
+      displayWeight();
+    }
+    else
+    {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
 }
 
 void loop()
