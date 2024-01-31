@@ -14,21 +14,22 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-const int HX711_dout = 4; // mcu > HX711 dout pin, must be external interrupt capable!
-const int HX711_sck = 16; // mcu > HX711 sck pin
+const int HX711_dout = 4; // microcontroller unit > HX711 dout pin, must be external interrupt capable!
+const int HX711_sck = 16; // microcontroller unit > HX711 sck pin
 
 // HX711 constructor:
 HX711_ADC LoadCell(HX711_dout, HX711_sck);
 float calibrationValue = 743.72;
 const int calVal_eepromAdress = 0;
 bool useEEPROM = true;
+bool serviceEnabled = false;
 
 unsigned long t = 0;
 const int serialPrintInterval = 100;
 volatile boolean newDataReady;
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
-bool enableBootDisplay = false;
+bool enableBootDisplay = true;
 
 // Replace the next variables with your SSID/Password combination
 const char *ssid = "Cocktail_Mixer";
@@ -166,7 +167,9 @@ void setup()
   {
     displayBoot();
   }
-  setupMQTT();
+  if (serviceEnabled) {
+    setupMQTT();
+  }
 }
 
 void displayWeight()
@@ -249,7 +252,10 @@ void handleNewWeightData()
     newWeight = 0;
   }
   displayedWeight = newWeight;
-  publishWeightToMQTT();
+  if (serviceEnabled)
+  {
+    publishWeightToMQTT();
+  }
   displayWeight();
   Serial.print("Load_cell output val: ");
   Serial.println(newWeight);
@@ -284,12 +290,14 @@ void reconnect()
 
 void loop()
 {
-  if (!client.connected())
+  if (serviceEnabled)
   {
-    reconnect();
+    if (!client.connected())
+    {
+      reconnect();
+    }
+    client.loop();
   }
-  client.loop();
-
   // get smoothed value from the dataset:
   if (newDataReady)
   {
